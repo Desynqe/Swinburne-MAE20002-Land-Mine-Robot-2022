@@ -62,10 +62,10 @@ outputData = addoutput(s, "myDAQ1", 'port0/line3', 'Digital') % Output for signa
 
 % ENGINEER GAMING
 
-degreeMatrix = [-80 -70 -60 -50 -40 -30 -20 -10 0 10 20 30 40 50 60 70 80]; % Matrix of search pattern
+degreeMatrix = [-80 -70 -60 -50 -40 -30 -20 -10 0 10 20 30 40 50 60 70 80]; % Matrix of search pattern bearings
 timeMatrix = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1] % Driving time for each bearing in degreeMatrix
-length(degreeMatrix)
-length(timeMatrix)
+length(degreeMatrix) % debugging
+length(timeMatrix) % debugging
 
 % Variables needed:
     % Time in seconds to turn 10 degrees.
@@ -78,8 +78,6 @@ length(timeMatrix)
 
 % outputData takes FOUR (5) arguments.
 % outputData = ['DC Motor 1'         'DC Motor 2'         'Servo motor'  'LED']
-
-
 
 
 %Start by driving back
