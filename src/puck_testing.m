@@ -1,3 +1,7 @@
+%% THIS CODE WORKS
+
+
+
 %Acquire Analog Input Data in the Foreground
 d = daqlist;
 %Create a session object and save it to the variable, s: 
@@ -10,17 +14,20 @@ addinput(s,'myDAQ1','ai1','Voltage')
 % Creates a timetable array with two columns for ai0 and ai1.
 
 
-maxRedOnBlue = 0.85;
-minRedOnBlue = 0.75;
+maxRedOnBlue = 3;
+minRedOnBlue = 1;
 
-maxBlueOnBlue = 4.65;
-minBlueOnBlue = 4.64;
+maxBlueOnBlue = 5;
+minBlueOnBlue = 4;
 
-maxRedOnRed = 4.3;
-minRedOnRed = 4.00;
+maxRedOnRed = 4;
+minRedOnRed = 3;
 
-maxBlueOnRed = 1.4;
-minBlueOnRed = 1.1;
+maxBlueOnRed = 3;
+minBlueOnRed = 2;
+
+maxBlack = 2;
+minWhite = 4;
 
 
 while (1)
@@ -28,15 +35,25 @@ while (1)
     %stackedplot(input_data)
     redValue =  inputData{1,1};
     blueValue = inputData{1,2};
+    
     disp(['Red value: ' num2str(redValue)]);
     disp(['Blue value: ' num2str(blueValue)]);
-    if (redValue < maxRedOnRed && redValue > minRedOnRed && blueValue < maxBlueOnRed && blueValue > minBlueOnRed)
-        disp('RED RED RED RED RED RED RED RED');
-    elseif (redValue < maxRedOnBlue && redValue > minRedOnBlue && blueValue < maxBlueOnBlue && blueValue > minBlueOnBlue)
-        disp('BLUE BLUE BLUE BLUE BLUE BLUE BLUE BLUE');
+    if (redValue < maxRedOnRed && redValue > minRedOnRed && blueValue < maxBlueOnRed && blueValue > minBlueOnRed) % Check for red
+        disp('RED SUS!!');
+        output = "RED";
+    elseif (redValue < maxRedOnBlue && redValue > minRedOnBlue && blueValue < maxBlueOnBlue && blueValue > minBlueOnBlue) % Check for blue
+        disp('BLUE (DA BA DEE DA BA DIE)');
+        output = "BLUE";
+    elseif (redValue < maxBlack && blueValue < maxBlack)
+        disp('BLACK');
+        output = "BLACK";
+    elseif ( redValue > minWhite && blueValue > minWhite)
+        disp('WHITE');
+        output = "WHITE";
     else
         disp('NOTHING');
-    end
-    pause(0.2)
+    end % End of if statement
+
+    pause(0.05)
 end
 
