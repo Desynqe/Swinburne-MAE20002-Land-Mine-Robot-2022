@@ -24,14 +24,14 @@ ledStatus = 0;
 maxRedOnBlue = 3;
 minRedOnBlue = 1;
 
-maxBlueOnBlue = 5;
+maxBlueOnBlue = 5.5;
 minBlueOnBlue = 4;
 
-maxRedOnRed = 4;
-minRedOnRed = 3;
+maxRedOnRed = 5;
+minRedOnRed = 3.3;
 
 maxBlueOnRed = 3;
-minBlueOnRed = 2;
+minBlueOnRed = 1;
 
 maxBlack = 2;
 minWhite = 4;
@@ -43,7 +43,7 @@ initialTurnTime = 2;
 IncTurnTime = 0.25; % Time in seconds to turn 10 degrees
 waitTime = 1;
 longWaitTime = 2;
-
+puckDropDriveTime = 2;
 
 
 % DAQ Input channels
@@ -106,6 +106,7 @@ outputData = addoutput(s, "myDAQ1", 'port0/line3', 'Digital') % Output for signa
 % Start path
 % Reverse into wall
 
+disp('> Aligning with wall');
 outputData = [backward backward up off];
 write(s,outputData);
 pause(1.5);
@@ -119,6 +120,7 @@ write(s,outputData);
 
 colour = "NOTHING"; % Initialise variable to for win condition checking
 
+disp('> Driving to the black line');
 while (colour ~= "BLACK") % Drive to black line.
     outputData = [forward forward up ledStatus];
     write(s,outputData); % Start driving foward
@@ -169,7 +171,7 @@ for (j = 1:16)
     
     % Start driving forward to look for puck. ONLY LOOKING FOR RED RIGHT
     % NOW
-    
+    disp('> Looking for a red puck...');
     while (colour ~= "RED")
         outputData = [forward forward up ledStatus];
         write(s,outputData)
@@ -180,25 +182,25 @@ for (j = 1:16)
     
         % Processing data
         if (redValue < maxRedOnRed && redValue > minRedOnRed && blueValue < maxBlueOnRed && blueValue > minBlueOnRed) % Check for red
-            disp('RED SUS!!');
+            %disp('RED SUS!!');
             colour = "RED";
             ledStatus = on;
             scVar = 1;
         elseif (redValue < maxRedOnBlue && redValue > minRedOnBlue && blueValue < maxBlueOnBlue && blueValue > minBlueOnBlue) % Check for blue
-            disp('BLUE (DA BA DEE DA BA DIE)');
+            %disp('BLUE (DA BA DEE DA BA DIE)');
             colour = "BLUE";
             ledStatus = on;
             scVar = 2;
         elseif (redValue < maxBlack && blueValue < maxBlack) % This is the win condition
-            disp('BLACK');
+            %disp('BLACK');
             colour = "BLACK"; 
             ledStatus = off;
         elseif ( redValue > minWhite && blueValue > minWhite)
-            disp('WHITE');
+            %disp('WHITE');
             colour = "WHITE";
             ledStatus = off;
         else
-            disp('NOTHING');
+            %disp('NOTHING');
             ledStatus = on; % CHANGE THIS LATER
         end % End of if statement
             pause(0.005) % Repeat at 200Hz
@@ -207,6 +209,9 @@ for (j = 1:16)
         outputData = [stop stop down on];
         write(s,outputData);
         pause(waitTime);
+
+
+    disp('> Looking for the black line...');   
     while (colour ~= "BLACK")
         outputData = [backward backward down on];
         write(s,outputData)
@@ -217,16 +222,16 @@ for (j = 1:16)
     
         % Processing data
         if (redValue < maxRedOnRed && redValue > minRedOnRed && blueValue < maxBlueOnRed && blueValue > minBlueOnRed) % Check for red
-            disp('RED SUS!!');
+            %disp('RED SUS!!');
             colour = "RED";
         elseif (redValue < maxRedOnBlue && redValue > minRedOnBlue && blueValue < maxBlueOnBlue && blueValue > minBlueOnBlue) % Check for blue
-            disp('BLUE (DA BA DEE DA BA DIE)');
+            %disp('BLUE (DA BA DEE DA BA DIE)');
             colour = "BLUE";
         elseif (redValue < maxBlack && blueValue < maxBlack) % This is the win condition
-            disp('BLACK');
+            %disp('BLACK');
             colour = "BLACK"; 
         elseif ( redValue > minWhite && blueValue > minWhite)
-            disp('WHITE');
+            %disp('WHITE');
             colour = "WHITE";
         else
             disp('NOTHING');
@@ -234,20 +239,33 @@ for (j = 1:16)
 
     end % End of while loop looking for black line
     outputData = [stop stop down on];
-    write(s,outputData)
-    pause(waitTime)
-    
+    write(s,outputData);
+    pause(waitTime);
+
     % Turn 180 degrees
+    disp('> Turning 180 degrees');
     outputData = [forward backward down on];
     write(s,outputData);
     pause(IncTurnTime*18);
+    
+    disp('> Moving lolololol');
+    outputData = [forward forward down on];
+    write(s,outputData);
+    pause(puckDropDriveTime);
 
     % Drop puck
+    disp('> Dropping puck');
     outputData = [stop stop up on];
-    write(outputData);
-    pause(longWaitTime);
+    write(s,outputData);
+    pause(longWaitTime*5);
+
+    disp('> Moving lolololol');
+    outputData = [backward backward down on];
+    write(s,outputData);
+    pause(puckDropDriveTime);
 
     % Turn back 180 degrees
+    disp('> Turning 180 degrees');
     outputData = [backward forward up on];
     write(s,outputData);
     pause(IncTurnTime*18);
