@@ -17,14 +17,14 @@ addinput(s,'myDAQ1','ai1','Voltage')
 maxRedOnBlue = 3;
 minRedOnBlue = 1;
 
-maxBlueOnBlue = 5;
+maxBlueOnBlue = 5.5;
 minBlueOnBlue = 4;
 
-maxRedOnRed = 4;
-minRedOnRed = 3;
+maxRedOnRed = 5;
+minRedOnRed = 3.3;
 
 maxBlueOnRed = 3;
-minBlueOnRed = 2;
+minBlueOnRed = 1;
 
 maxBlack = 2;
 minWhite = 4;
@@ -54,6 +54,6 @@ while (1)
         disp('NOTHING');
     end % End of if statement
 
-    pause(0.05)
+    pause(0.2)
 end
 
