@@ -10,16 +10,17 @@ forward = [1 0];
 backward = [0 1];
 left = [backward forward];
 right = [forward backward];
-
 stop = [0 0];
 down = 7; % 7V to servo 
 up = 3; % 3V to servo
+
+% Signal LED Control
 on = 1;
 off = 0;
+ledStatus = 0;
 
 
 % Phototransistor ranges in Volts.
-
 maxRedOnBlue = 3;
 minRedOnBlue = 1;
 
@@ -34,6 +35,15 @@ minBlueOnRed = 2;
 
 maxBlack = 2;
 minWhite = 4;
+
+% Mics variables
+degreeMatrix = [-80 -70 -60 -50 -40 -30 -20 -10 0 10 20 30 40 50 60 70 80]; % Matrix of search pattern bearings
+driveTimeMatrix = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1] % Driving time for each bearing in degreeMatrix
+initialTurnTime = 2;
+IncTurnTime = 0.25; % Time in seconds to turn 10 degrees
+waitTime = 1;
+longWaitTime = 2;
+
 
 
 % DAQ Input channels
@@ -62,15 +72,12 @@ outputData = addoutput(s, "myDAQ1", 'port0/line3', 'Digital') % Output for signa
 
 % ENGINEER GAMING
 
-degreeMatrix = [-80 -70 -60 -50 -40 -30 -20 -10 0 10 20 30 40 50 60 70 80]; % Matrix of search pattern bearings
-timeMatrix = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1] % Driving time for each bearing in degreeMatrix
-length(degreeMatrix) % debugging
-length(timeMatrix) % debugging
+
 
 % Variables needed:
     % Time in seconds to turn 10 degrees.
     % Time in seconds for each distance driven.
-    % Time in seconds for 
+
 
 
 % inputData takes FIVE (5) arguments.
@@ -82,48 +89,170 @@ length(timeMatrix) % debugging
 
 %Start by driving back
 
-outputData = [backward backward 0 1]
-write(s,outputData)
-pause(1);
+%outputData = [backward backward 0 1]
+%write(s,outputData)
+%pause(1);
 
-outputData = [stop stop 0 1];
-write(s,outputData)
-pause(1);
+%outputData = [stop stop 0 1];
+%write(s,outputData)
+%pause(1);
 
-outputData = [stop stop 0 0]
-write(s,outputData)
-pause(1);
+%outputData = [stop stop 0 0]
+%write(s,outputData)
+%pause(1);
 
 
-colour = "colour";
-length(colour);
 
-% Drive to black line.
-while (colour ~= "BLACK")
+% Start path
+% Reverse into wall
+
+outputData = [backward backward up off];
+write(s,outputData);
+pause(1.5);
+outputData = [stop stop up off];
+write(s,outputData);
+
+
+% Find black line
+%outputData = [forward forward up off]; 
+%write(s,outputData); % Start driving foward
+
+colour = "NOTHING"; % Initialise variable to for win condition checking
+
+while (colour ~= "BLACK") % Drive to black line.
+    outputData = [forward forward up ledStatus];
+    write(s,outputData); % Start driving foward
     inputData = read(s,1) % Read input from the myDAQ
     % Begin checking the values.
-    colour = photo_diode_f(inputData)
-        % Reading data
     redValue =  inputData{1,1}; % Get the first element in inputData (the red photodiode value)
     blueValue = inputData{1,2}; % Get the second element in inputData (the blue photodiode value)
 
     % Processing data
     if (redValue < maxRedOnRed && redValue > minRedOnRed && blueValue < maxBlueOnRed && blueValue > minBlueOnRed) % Check for red
         disp('RED SUS!!');
-        output = "RED";
+        colour = "RED";
+        ledStatus = on;
     elseif (redValue < maxRedOnBlue && redValue > minRedOnBlue && blueValue < maxBlueOnBlue && blueValue > minBlueOnBlue) % Check for blue
         disp('BLUE (DA BA DEE DA BA DIE)');
-        output = "BLUE";
-    elseif (redValue < maxBlack && blueValue < maxBlack)
+        colour = "BLUE";
+        ledStatus = on;
+    elseif (redValue < maxBlack && blueValue < maxBlack) % This is the win condition
         disp('BLACK');
-        output = "BLACK";
+        colour = "BLACK"; 
+        ledStatus = off;
     elseif ( redValue > minWhite && blueValue > minWhite)
         disp('WHITE');
-        output = "WHITE";
+        colour = "WHITE";
+        ledStatus = off;
     else
         disp('NOTHING');
+        ledStatus = on; % CHANGE THIS LATER
     end % End of if statement
+    pause(0.2)
+    
 end % End the while loop checking for black tape.
 
+outputData = [stop stop up off];
+write(s,outputData); % Stop the robot
+
+lengthOfDegreeMatrix = length(degreeMatrix);
+    outputData = [backward forward up off];
+    write(s,outputData);
+    pause(initialTurnTime)
+for (j = 1:16)
+    outputData = [forward backward up off];
+    write(s,outputData)
+    pause(IncTurnTime)
+    outputData = [stop stop up off];
+    write(s,outputData)
+    pause(waitTime)
+    
+    % Start driving forward to look for puck. ONLY LOOKING FOR RED RIGHT
+    % NOW
+    
+    while (colour ~= "RED")
+        outputData = [forward forward up ledStatus];
+        write(s,outputData)
+        inputData = read(s,1); % Read input from the myDAQ
+        % Begin checking the values.
+        redValue =  inputData{1,1}; % Get the first element in inputData (the red photodiode value)
+        blueValue = inputData{1,2}; % Get the second element in inputData (the blue photodiode value)
+    
+        % Processing data
+        if (redValue < maxRedOnRed && redValue > minRedOnRed && blueValue < maxBlueOnRed && blueValue > minBlueOnRed) % Check for red
+            disp('RED SUS!!');
+            colour = "RED";
+            ledStatus = on;
+            scVar = 1;
+        elseif (redValue < maxRedOnBlue && redValue > minRedOnBlue && blueValue < maxBlueOnBlue && blueValue > minBlueOnBlue) % Check for blue
+            disp('BLUE (DA BA DEE DA BA DIE)');
+            colour = "BLUE";
+            ledStatus = on;
+            scVar = 2;
+        elseif (redValue < maxBlack && blueValue < maxBlack) % This is the win condition
+            disp('BLACK');
+            colour = "BLACK"; 
+            ledStatus = off;
+        elseif ( redValue > minWhite && blueValue > minWhite)
+            disp('WHITE');
+            colour = "WHITE";
+            ledStatus = off;
+        else
+            disp('NOTHING');
+            ledStatus = on; % CHANGE THIS LATER
+        end % End of if statement
+            pause(0.005) % Repeat at 200Hz
+            
+    end % End while loop looking for red puck
+        outputData = [stop stop down on];
+        write(s,outputData);
+        pause(waitTime);
+    while (colour ~= "BLACK")
+        outputData = [backward backward down on];
+        write(s,outputData)
+        inputData = read(s,1); % Read input from the myDAQ
+        % Begin checking the values.
+        redValue =  inputData{1,1}; % Get the first element in inputData (the red photodiode value)
+        blueValue = inputData{1,2}; % Get the second element in inputData (the blue photodiode value)
+    
+        % Processing data
+        if (redValue < maxRedOnRed && redValue > minRedOnRed && blueValue < maxBlueOnRed && blueValue > minBlueOnRed) % Check for red
+            disp('RED SUS!!');
+            colour = "RED";
+        elseif (redValue < maxRedOnBlue && redValue > minRedOnBlue && blueValue < maxBlueOnBlue && blueValue > minBlueOnBlue) % Check for blue
+            disp('BLUE (DA BA DEE DA BA DIE)');
+            colour = "BLUE";
+        elseif (redValue < maxBlack && blueValue < maxBlack) % This is the win condition
+            disp('BLACK');
+            colour = "BLACK"; 
+        elseif ( redValue > minWhite && blueValue > minWhite)
+            disp('WHITE');
+            colour = "WHITE";
+        else
+            disp('NOTHING');
+        end % End of if statement
+
+    end % End of while loop looking for black line
+    outputData = [stop stop down on];
+    write(s,outputData)
+    pause(waitTime)
+    
+    % Turn 180 degrees
+    outputData = [forward backward down on];
+    write(s,outputData);
+    pause(IncTurnTime*18);
+
+    % Drop puck
+    outputData = [stop stop up on];
+    write(outputData);
+    pause(longWaitTime);
+
+    % Turn back 180 degrees
+    outputData = [backward forward up on];
+    write(s,outputData);
+    pause(IncTurnTime*18);
+
+    % REPEAT THE FOR LOOP! LETS FUCKING GOOOOOOOOOOOOO
+end
 
 
