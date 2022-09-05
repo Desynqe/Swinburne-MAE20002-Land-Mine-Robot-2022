@@ -249,7 +249,6 @@ for (j = 1:16)
     if(redPuckCounter = totalPucksOnField)
     
 
-    % REPEAT THE FOR LOOP! LETS FUCKING GOOOOOOOOOOOOO
-end
+    % REPEAT THE FOR LOOP!
 
 
