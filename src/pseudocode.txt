@@ -1,0 +1,31 @@
+Initialise the 10 parameters for sensing colours with the phototransistors. The colours being red, blue, white, and black.
+
+Initialise a row matrix of 17 elements for +- 80 degrees from a 0 degree bearing, at 10 degree intervals.
+
+Initialise a row matrix of 17 elements, each element being a pre-determined duration in seconds that the robot will drive forward and backwards.
+
+Initialise more variables as constants, being different times in seconds, for different operations later in the program.
+
+Initialise myDAQ and create a session.
+
+Create input channels for both phototransistor analog voltages and 3 bumper switch digital signals.
+
+Create output channels for both DC motor digital signals, the analog servo motor voltage, and an LED for signalling a caught puck.
+
+Begin the path:
+1. From the starting location (facing forward into the field), drive backward into the wall. 
+2. Drive forward to the black line.
+3. Turn 80 degrees to the left.
+4. Drive forward looking for a puck.
+5. If no red puck is found in the time limit corresponding to the bearing, reverse to the black line and jump to step [15]
+6. If a red puck is found, or the time limit is reached, stop the robot.
+7. Close the claw
+8. Reverse to behind the black line.
+9. Turn 180 degrees
+10. Drive forward a little bit.
+11. Drop the puck
+12. Reverse a little bit.
+13. Turn 180 degrees.
+14. If n = 17 (see step 15) jump to step 16. If not, continue to step 15.
+15. Return to step 4 with a new bearing, where the New Bearing = 80-10n, where 'n' is the number of times step 14 has been reached. 
+16. End the program.

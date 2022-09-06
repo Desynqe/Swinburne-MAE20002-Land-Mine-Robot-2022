@@ -39,45 +39,36 @@ minWhite = 4;
 % Mics variables
 degreeMatrix = [-80 -70 -60 -50 -40 -30 -20 -10 0 10 20 30 40 50 60 70 80]; % Matrix of search pattern bearings
 driveTimeMatrix = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1] % Driving time for each bearing in degreeMatrix
-initialTurnTime = 2;
-IncTurnTime = 0.25; % Time in seconds to turn 10 degrees
-waitTime = 1;
-longWaitTime = 2;
-puckDropDriveTime = 2;
+incTurnTime = 0.25; % Time in seconds to turn 10 degrees
+waitTime = 1; % An arbitrary wait time between commands
+longWaitTime = 2; % See above
+puckDropDriveTime = 2; % How long to drive behind the black line when dropping the puck
+redPuckCounter = 0; % Counts how many red pucks have been collected.
+hasPuck = 0; % Becomes 1 if the robot has a puck.
+totalPucksOnField = 5; % A constant.
+alignTime = 1.5; % time to drive backward when aligning with a wall.
+secondsWallToWall = 10; % Time to drive from one wall to the other when swiching search pattern location.
 
 
-% DAQ Input channels
+
+
+% Initialise myDAQ
 d = daqlist % Find the myDAQ device.
 s = daq('ni') % Create a session on the myDAQ
+
+% DAQ Input channels
+
 
 inputData = addinput(s,"myDAQ1",'ai0','Voltage') % Analog input for transistor one (red paired)
 inputData = addinput(s,"myDAQ1",'ai1','Voltage') % Analog input for transistor two (blue paired)
 inputData = addinput(s,"myDAQ1",'port0/line0:2','Digital') % Digital input for the 3 bumper switches on DI:0, DI:1, and DI:2.
-
-length(inputData) % debugging
-height(inputData) % debugging
-
-
 % inputData = ['Phototransistor 1' 'Phototransistor 2' 'Bumper 1' 'Bumper 2' 'Bumper 3']
 
 % DAQ Output Channels
-% 
 outputData = addoutput(s, "myDAQ1", 'port0/line4:7', 'Digital') % Digital output for the two DC motors. M1 on port DO:4, DO:5, M2 on DO:6, DO:7.
 outputData = addoutput(s, "myDAQ1", 'ao0', 'Voltage') % Analog output for the servo.
 outputData = addoutput(s, "myDAQ1", 'port0/line3', 'Digital') % Output for signalling LED on DO:3.
-
 % outputData = ['DC Motor 1' 'DC Motor 2' 'Servo motor' 'LED']
-
-
-
-% ENGINEER GAMING
-
-
-
-% Variables needed:
-    % Time in seconds to turn 10 degrees.
-    % Time in seconds for each distance driven.
-
 
 
 % inputData takes FIVE (5) arguments.
@@ -86,22 +77,7 @@ outputData = addoutput(s, "myDAQ1", 'port0/line3', 'Digital') % Output for signa
 % outputData takes FOUR (5) arguments.
 % outputData = ['DC Motor 1'         'DC Motor 2'         'Servo motor'  'LED']
 
-
 %Start by driving back
-
-%outputData = [backward backward 0 1]
-%write(s,outputData)
-%pause(1);
-
-%outputData = [stop stop 0 1];
-%write(s,outputData)
-%pause(1);
-
-%outputData = [stop stop 0 0]
-%write(s,outputData)
-%pause(1);
-
-
 
 % Start path
 % Reverse into wall
@@ -109,7 +85,7 @@ outputData = addoutput(s, "myDAQ1", 'port0/line3', 'Digital') % Output for signa
 disp('> Aligning with wall');
 outputData = [backward backward up off];
 write(s,outputData);
-pause(1.5);
+pause(alignTime);
 outputData = [stop stop up off];
 write(s,outputData);
 
@@ -157,22 +133,27 @@ end % End the while loop checking for black tape.
 outputData = [stop stop up off];
 write(s,outputData); % Stop the robot
 
-lengthOfDegreeMatrix = length(degreeMatrix);
-    outputData = [backward forward up off];
-    write(s,outputData);
-    pause(initialTurnTime)
-for (j = 1:16)
+
+outputData = [backward forward up off];
+write(s,outputData); % Turn to 90 degrees left of north (face west)
+pause(incTurnTime*9); 
+
+
+for (j = 1:17)
+
     outputData = [forward backward up off];
-    write(s,outputData)
-    pause(IncTurnTime)
-    outputData = [stop stop up off];
-    write(s,outputData)
-    pause(waitTime)
+    write(s,outputData) % Turn right 10 degrees
+    pause(incTurnTime);
+
+    outputData = [stop stop up off]; % Stop
+    write(s,outputData);
+    pause(waitTime);
     
-    % Start driving forward to look for puck. ONLY LOOKING FOR RED RIGHT
-    % NOW
+    % Start driving forward to look for puck. ONLY LOOKING FOR RED
     disp('> Looking for a red puck...');
-    while (colour ~= "RED")
+    tic % Start counting time in seconds
+
+    while (colour ~= "RED" || driveTimeMatrix(j) < toc) % 'toc' reads the time elapsed from 'tic'
         outputData = [forward forward up ledStatus];
         write(s,outputData)
         inputData = read(s,1); % Read input from the myDAQ
@@ -185,12 +166,11 @@ for (j = 1:16)
             %disp('RED SUS!!');
             colour = "RED";
             ledStatus = on;
-            scVar = 1;
+            hasPuck = 1;
         elseif (redValue < maxRedOnBlue && redValue > minRedOnBlue && blueValue < maxBlueOnBlue && blueValue > minBlueOnBlue) % Check for blue
             %disp('BLUE (DA BA DEE DA BA DIE)');
             colour = "BLUE";
             ledStatus = on;
-            scVar = 2;
         elseif (redValue < maxBlack && blueValue < maxBlack) % This is the win condition
             %disp('BLACK');
             colour = "BLACK"; 
@@ -242,35 +222,58 @@ for (j = 1:16)
     write(s,outputData);
     pause(waitTime);
 
-    % Turn 180 degrees
-    disp('> Turning 180 degrees');
-    outputData = [forward backward down on];
-    write(s,outputData);
-    pause(IncTurnTime*18);
-    
-    disp('> Moving lolololol');
-    outputData = [forward forward down on];
-    write(s,outputData);
-    pause(puckDropDriveTime);
+    if (hasPuck == 1) % Drops the puck if we have it
+        disp('> Turning 180 degrees');
+        % Turn 180 degrees
+        outputData = [forward backward down on];
+        write(s,outputData);
+        pause(incTurnTime*18);
+        
+        % Drive forward a little bit
+        disp('> Moving');
+        outputData = [forward forward down on];
+        write(s,outputData);
+        pause(puckDropDriveTime);
 
-    % Drop puck
-    disp('> Dropping puck');
-    outputData = [stop stop up on];
-    write(s,outputData);
-    pause(longWaitTime*5);
+        % Drop puck
+        disp('> Dropping puck');
+        outputData = [stop stop up on];
+        write(s,outputData);
+        pause(longWaitTime*5);
 
-    disp('> Moving lolololol');
-    outputData = [backward backward down on];
-    write(s,outputData);
-    pause(puckDropDriveTime);
+        % Drive backward a little bit
+        disp('> Moving');
+        outputData = [backward backward down on];
+        write(s,outputData);
+        pause(puckDropDriveTime);
 
-    % Turn back 180 degrees
-    disp('> Turning 180 degrees');
-    outputData = [backward forward up on];
-    write(s,outputData);
-    pause(IncTurnTime*18);
+        % Turn back 180 degrees
+        disp('> Turning 180 degrees');
+        outputData = [backward forward up on];
+        write(s,outputData);
+        pause(incTurnTime*18);
+    end
+    if(redPuckCounter == totalPucksOnField)
+        return;
+    end
+end % For loop end
 
-    % REPEAT THE FOR LOOP! LETS FUCKING GOOOOOOOOOOOOO
-end
+outputData = [backward forward up off off];
+write(s,outputData); % Turn to bearing 0
+pause(incTurnTime*8);
+
+disp('> Aligning with wall');
+outputData = [backward backward up off];
+write(s,outputData);
+pause(alignTime);
+outputData = [stop stop up off];
+write(s,outputData);
+
+disp('> Driving forward');
+outputData = [forward forward up off];
+write(s,outputData);
+pause(secondsWallToWall);
+outputData = [stop stop up off];
+write(s,outputData);
 
 
