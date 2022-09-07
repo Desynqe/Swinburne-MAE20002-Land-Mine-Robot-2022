@@ -11,8 +11,8 @@ backward = [0 1];
 left = [backward forward];
 right = [forward backward];
 stop = [0 0];
-down = 7; % 7V to servo 
-up = 3; % 3V to servo
+down = 4.5; %4.5V to servo 
+up = 10; % 10V to servo
 
 % Signal LED Control
 on = 1;
@@ -30,31 +30,31 @@ minBlueOnBlue = 4;
 maxRedOnRed = 5;
 minRedOnRed = 3.3;
 
-maxBlueOnRed = 3;
-minBlueOnRed = 1;
+maxBlueOnRed = 4;
+minBlueOnRed = 2;
 
-maxBlack = 2;
-minWhite = 4;
+maxBlack = 2.2;
+minWhite = 3.6;
 
 % Mics variables
 degreeMatrix = [-80 -70 -60 -50 -40 -30 -20 -10 0 10 20 30 40 50 60 70 80]; % Matrix of search pattern bearings
-driveTimeMatrix = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1] % Driving time for each bearing in degreeMatrix
-incTurnTime = 0.25; % Time in seconds to turn 10 degrees
+driveTimeMatrix = [3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3]; % Driving time for each bearing in degreeMatrix
+incTurnTime = 0.5; % Time in seconds to turn 10 degrees
 waitTime = 1; % An arbitrary wait time between commands
 longWaitTime = 2; % See above
 puckDropDriveTime = 2; % How long to drive behind the black line when dropping the puck
 redPuckCounter = 0; % Counts how many red pucks have been collected.
 hasPuck = 0; % Becomes 1 if the robot has a puck.
-totalPucksOnField = 5; % A constant.
+totalPucksOnField = 1; % A constant.
 alignTime = 1.5; % time to drive backward when aligning with a wall.
-secondsWallToWall = 10; % Time to drive from one wall to the other when swiching search pattern location.
+secondsWallToWall = 6; % Time to drive from one wall to the other when swiching search pattern location.
 
 
 
 
 % Initialise myDAQ
-d = daqlist % Find the myDAQ device.
-s = daq('ni') % Create a session on the myDAQ
+d = daqlist; % Find the myDAQ device.
+s = daq('ni'); % Create a session on the myDAQ
 
 % DAQ Input channels
 
@@ -100,7 +100,7 @@ disp('> Driving to the black line');
 while (colour ~= "BLACK") % Drive to black line.
     outputData = [forward forward up ledStatus];
     write(s,outputData); % Start driving foward
-    inputData = read(s,1) % Read input from the myDAQ
+    inputData = read(s,1); % Read input from the myDAQ
     % Begin checking the values.
     redValue =  inputData{1,1}; % Get the first element in inputData (the red photodiode value)
     blueValue = inputData{1,2}; % Get the second element in inputData (the blue photodiode value)
@@ -139,12 +139,12 @@ write(s,outputData); % Turn to 90 degrees left of north (face west)
 pause(incTurnTime*9); 
 
 
-for (j = 1:17)
+for (j = 1:17) % For loop that will scan the field looking for pucks.
 
     outputData = [forward backward up off];
     write(s,outputData) % Turn right 10 degrees
     pause(incTurnTime);
-
+    
     outputData = [stop stop up off]; % Stop
     write(s,outputData);
     pause(waitTime);
@@ -153,6 +153,7 @@ for (j = 1:17)
     disp('> Looking for a red puck...');
     tic % Start counting time in seconds
 
+    %  || inputData{3} == 1 || inputData{4} == 1 || inputData{5} == 1
     while (colour ~= "RED" || driveTimeMatrix(j) < toc) % 'toc' reads the time elapsed from 'tic'
         outputData = [forward forward up ledStatus];
         write(s,outputData)

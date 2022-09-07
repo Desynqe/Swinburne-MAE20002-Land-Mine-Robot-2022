@@ -1,4 +1,4 @@
-%% THIS CODE WORKS
+% THIS CODE WORKS
 
 
 
@@ -23,11 +23,11 @@ minBlueOnBlue = 4;
 maxRedOnRed = 5;
 minRedOnRed = 3.3;
 
-maxBlueOnRed = 3;
-minBlueOnRed = 1;
+maxBlueOnRed = 4;
+minBlueOnRed = 2;
 
-maxBlack = 2;
-minWhite = 4;
+maxBlack = 2.2;
+minWhite = 3.6;
 
 
 while (1)
