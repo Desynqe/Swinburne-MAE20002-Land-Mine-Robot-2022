@@ -3,6 +3,11 @@
 % The blue/green phototransistor is for the Red LED (ai0)
 % The purple/brown phototransistor if for the Blue LED (ai1)
 
+clear all
+close all
+clc
+%% 
+
 
 % Variables
 % Motor control
@@ -24,17 +29,17 @@ ledStatus = 0;
 maxRedOnBlue = 3;
 minRedOnBlue = 1;
 
-maxBlueOnBlue = 5.5;
-minBlueOnBlue = 4;
+maxBlueOnBlue = 4.5;
+minBlueOnBlue = 3;
 
-maxRedOnRed = 5;
+maxRedOnRed = 4.5;
 minRedOnRed = 3.3;
 
-maxBlueOnRed = 4;
-minBlueOnRed = 2;
+maxBlueOnRed = 3;
+minBlueOnRed = 1;
 
-maxBlack = 2.2;
-minWhite = 3.6;
+maxBlack = 1;
+minWhite = 1.8;
 
 % Mics variables
 degreeMatrix = [-80 -70 -60 -50 -40 -30 -20 -10 0 10 20 30 40 50 60 70 80]; % Matrix of search pattern bearings
@@ -50,6 +55,7 @@ alignTime = 1.5; % time to drive backward when aligning with a wall.
 secondsWallToWall = 6; % Time to drive from one wall to the other when swiching search pattern location.
 
 
+%% 
 
 
 % Initialise myDAQ
@@ -104,7 +110,9 @@ while (colour ~= "BLACK") % Drive to black line.
     % Begin checking the values.
     redValue =  inputData{1,1}; % Get the first element in inputData (the red photodiode value)
     blueValue = inputData{1,2}; % Get the second element in inputData (the blue photodiode value)
-
+    disp(['Red Value: ' num2str(redValue)]);
+    disp(['Blue Value: ' num2str(blueValue)]);
+    
     % Processing data
     if (redValue < maxRedOnRed && redValue > minRedOnRed && blueValue < maxBlueOnRed && blueValue > minBlueOnRed) % Check for red
         disp('RED SUS!!');
@@ -144,17 +152,17 @@ for (j = 1:17) % For loop that will scan the field looking for pucks.
     outputData = [forward backward up off];
     write(s,outputData) % Turn right 10 degrees
     pause(incTurnTime);
-    
+
     outputData = [stop stop up off]; % Stop
     write(s,outputData);
     pause(waitTime);
     
     % Start driving forward to look for puck. ONLY LOOKING FOR RED
     disp('> Looking for a red puck...');
-    tic % Start counting time in seconds
+    % tic % Start counting time in seconds
 
     %  || inputData{3} == 1 || inputData{4} == 1 || inputData{5} == 1
-    while (colour ~= "RED" || driveTimeMatrix(j) < toc) % 'toc' reads the time elapsed from 'tic'
+    while (colour ~= "RED") % 'toc' reads the time elapsed from 'tic'
         outputData = [forward forward up ledStatus];
         write(s,outputData)
         inputData = read(s,1); % Read input from the myDAQ
