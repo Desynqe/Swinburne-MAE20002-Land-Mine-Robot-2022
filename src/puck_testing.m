@@ -18,15 +18,15 @@ maxRedOnBlue = 3;
 minRedOnBlue = 1;
 
 maxBlueOnBlue = 4.5;
-minBlueOnBlue = 3;
+minBlueOnBlue = 3.1;
 
 maxRedOnRed = 4.5;
 minRedOnRed = 3.3;
 
-maxBlueOnRed = 3;
+maxBlueOnRed = 4;
 minBlueOnRed = 1;
 
-maxBlack = 1;
+maxBlack = 2.2;
 minWhite = 1.8;
 
 
@@ -54,6 +54,6 @@ while (1)
         disp('NOTHING');
     end % End of if statement
 
-    pause(0.2)
+    pause(0.05)
 end
 
