@@ -14,11 +14,11 @@ addinput(s,'myDAQ1','ai1','Voltage')
 % Creates a timetable array with two columns for ai0 and ai1.
 
 
-maxRedOnBlue = 3;
+maxRedOnBlue = 2;
 minRedOnBlue = 1;
 
 maxBlueOnBlue = 4.5;
-minBlueOnBlue = 3.1;
+minBlueOnBlue = 3.5;
 
 maxRedOnRed = 4.5;
 minRedOnRed = 3.3;
