@@ -23,11 +23,11 @@ minBlueOnBlue = 3.1;
 maxRedOnRed = 4.5;
 minRedOnRed = 3.3;
 
-maxBlueOnRed = 4;
+maxBlueOnRed = 3;
 minBlueOnRed = 1;
 
 maxBlack = 2.2;
-minWhite = 1.8;
+minWhite = 3;
 
 
 while (1)

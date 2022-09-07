@@ -51,7 +51,7 @@ maxRedOnBlue = 3;
 minRedOnBlue = 1;
 
 maxBlueOnBlue = 4.5;
-minBlueOnBlue = 3;
+minBlueOnBlue = 3.1;
 
 maxRedOnRed = 4.5;
 minRedOnRed = 3.3;
@@ -59,8 +59,8 @@ minRedOnRed = 3.3;
 maxBlueOnRed = 4;
 minBlueOnRed = 1;
 
-maxBlack = 2.5;
-minWhite = 2.8;
+maxBlack = 2.2;
+minWhite = 1.8;
 
 % Mics variables
 degreeMatrix = [-80 -70 -60 -50 -40 -30 -20 -10 0 10 20 30 40 50 60 70 80]; % Matrix of search pattern bearings
@@ -92,88 +92,29 @@ write(s,outputData);
 
 % Start path
 % Reverse into wall
+colour = "NOTHING";
 
-disp('> Aligning with wall');
-outputData = [backward backward up off];
-write(s,outputData);
-pause(alignTime);
-outputData = [stop stop up off];
-write(s,outputData);
-
-
-% Find black line
-%outputData = [forward forward up off]; 
-%write(s,outputData); % Start driving foward
-
-colour = "NOTHING"; % Initialise variable to for win condition checking
-
-disp('> Driving to the black line');
-outputData = [forward forward up ledStatus];
-write(s,outputData); % Start driving foward
-while (colour ~= "BLACK") % Drive to black line.
-
-    inputData = read(s,1); % Read input from the myDAQ
-    % Begin checking the values.
-    redValue =  inputData{1,1}; % Get the first element in inputData (the red photodiode value)
-    blueValue = inputData{1,2}; % Get the second element in inputData (the blue photodiode value)
-    disp(['Red Value: ' num2str(redValue)]);
-    disp(['Blue Value: ' num2str(blueValue)]);
-    
-    % Processing data
-    if (redValue < maxBlack && blueValue < maxBlack) % This is the win condition
-        disp('BLACK');
-        colour = "BLACK"; 
-        ledStatus = off;
-    else
-        disp('NOT BLACK');
-        ledStatus = on; % CHANGE THIS LATER
-    end % End of if statement
-
-    
-end % End the while loop checking for black tape.
-
-outputData = [stop stop up off];
-write(s,outputData); % Stop the robot
-
-
-outputData = [backward forward up off];
-write(s,outputData); % Turn to 90 degrees left of north (face west)
-pause(incTurnTime*8.5); 
-
-outputData = [stop stop up off]; % Stop
-write(s,outputData);
 for (j = 1:17) % For loop that will scan the field looking for pucks.
-
-    outputData = [forward backward up off];
-    write(s,outputData) % Turn right 10 degrees
-    pause(incTurnTime*4);
-
-    outputData = [stop stop up off]; % Stop
-    write(s,outputData);
-    pause(waitTime);
-    
-    % Start driving forward to look for puck. ONLY LOOKING FOR RED
-    disp('> Looking for a red puck...');
-    %tic % Start counting time in seconds
-    colour = "NOTHING";
-    
+outStatus = 0;
 % && driveTimeMatrix{j} >= toc 
     outputData = [forward forward up ledStatus];
     write(s,outputData)
     pause(0.3);
-    while (colour ~= "RED" && inputData{1,3} == 0 && inputData{1,4} == 0 && inputData{1,5} == 0) % 'toc' reads the time elapsed from 'tic'
+    while (colour ~= "RED") % 'toc' reads the time elapsed from 'tic'
 
         inputData = read(s,1); % Read input from the myDAQ
         % Begin checking the values.
         redValue =  inputData{1,1}; % Get the first element in inputData (the red photodiode value)
         blueValue = inputData{1,2}; % Get the second element in inputData (the blue photodiode value)
-    
+        
+
         % Processing data
         if (redValue < maxRedOnRed && redValue > minRedOnRed && blueValue < maxBlueOnRed && blueValue > minBlueOnRed) % Check for red
             %disp('RED SUS!!');
             colour = "RED";
             ledStatus = on;
             hasPuck = 1;
+            outStatus = outStatus + 1;
         else
             disp('NOTHING');
             ledStatus = on; % CHANGE THIS LATER
@@ -241,24 +182,6 @@ for (j = 1:17) % For loop that will scan the field looking for pucks.
         return;
     end
 end % For loop end
-
-outputData = [backward forward up off off];
-write(s,outputData); % Turn to bearing 0
-pause(incTurnTime*8);
-
-disp('> Aligning with wall');
-outputData = [backward backward up off];
-write(s,outputData);
-pause(alignTime);
-outputData = [stop stop up off];
-write(s,outputData);
-
-disp('> Driving forward');
-outputData = [forward forward up off];
-write(s,outputData);
-pause(secondsWallToWall);
-outputData = [stop stop up off];
-write(s,outputData);
 
 
 
