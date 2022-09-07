@@ -1,4 +1,4 @@
-%% THIS CODE WORKS
+% THIS CODE WORKS
 
 
 
@@ -17,17 +17,17 @@ addinput(s,'myDAQ1','ai1','Voltage')
 maxRedOnBlue = 3;
 minRedOnBlue = 1;
 
-maxBlueOnBlue = 5.5;
-minBlueOnBlue = 4;
+maxBlueOnBlue = 4.5;
+minBlueOnBlue = 3;
 
-maxRedOnRed = 5;
+maxRedOnRed = 4.5;
 minRedOnRed = 3.3;
 
 maxBlueOnRed = 3;
 minBlueOnRed = 1;
 
-maxBlack = 2;
-minWhite = 4;
+maxBlack = 1;
+minWhite = 1.8;
 
 
 while (1)
